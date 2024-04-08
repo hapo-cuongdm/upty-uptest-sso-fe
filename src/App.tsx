@@ -22,7 +22,9 @@ import routerProvider, {
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { IconBrandGoogle, IconBrandGithub } from "@tabler/icons-react";
 
-import { PostCreate, PostEdit, PostList, PostShow } from "./pages";
+import { PostCreate, PostEdit, PostList, PostShow, UserList } from "./pages";
+import { LoginPage } from "./pages/auth/login";
+import { ROUTE_ADMIN_LIST } from "./constants/routes";
 
 /**
  *  mock auth credentials to simulate authentication
@@ -34,21 +36,7 @@ const authCredentials = {
 
 const App: React.FC = () => {
   const authProvider: AuthProvider = {
-    login: async ({ providerName, email }) => {
-      if (providerName === "google") {
-        window.location.href = "https://accounts.google.com/o/oauth2/v2/auth";
-        return {
-          success: true,
-        };
-      }
-
-      if (providerName === "github") {
-        window.location.href = "https://github.com/login/oauth/authorize";
-        return {
-          success: true,
-        };
-      }
-
+    login: async ({ email, password }) => {
       if (email === authCredentials.email) {
         localStorage.setItem("email", email);
         return {
@@ -152,22 +140,13 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
-      <GitHubBanner />
       <ChakraProvider theme={RefineThemes.Blue}>
         <Refine
           dataProvider={dataProvider("https://api.fake-rest.refine.dev")}
           authProvider={authProvider}
           routerProvider={routerProvider}
           notificationProvider={useNotificationProvider()}
-          resources={[
-            {
-              name: "posts",
-              list: "/posts",
-              show: "/posts/show/:id",
-              edit: "/posts/edit/:id",
-              create: "/posts/create",
-            },
-          ]}
+          resources={ROUTE_ADMIN_LIST}
           options={{
             syncWithLocation: true,
             warnWhenUnsavedChanges: true,
@@ -194,6 +173,9 @@ const App: React.FC = () => {
                 <Route path="edit/:id" element={<PostEdit />} />
                 <Route path="show/:id" element={<PostShow />} />
               </Route>
+              <Route path="/users">
+                <Route index element={<UserList />} />
+              </Route>
             </Route>
 
             <Route
@@ -203,31 +185,7 @@ const App: React.FC = () => {
                 </Authenticated>
               }
             >
-              <Route
-                path="/login"
-                element={
-                  <AuthPage
-                    type="login"
-                    formProps={{
-                      defaultValues: {
-                        ...authCredentials,
-                      },
-                    }}
-                    providers={[
-                      {
-                        name: "google",
-                        label: "Sign in with Google",
-                        icon: <IconBrandGoogle />,
-                      },
-                      {
-                        name: "github",
-                        label: "Sign in with GitHub",
-                        icon: <IconBrandGithub />,
-                      },
-                    ]}
-                  />
-                }
-              />
+              <Route path="/login" element={<LoginPage />} />
               <Route
                 path="/register"
                 element={
